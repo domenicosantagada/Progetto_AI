@@ -72,7 +72,7 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
     // Creazione dell'handler per Windows (manca DLV nella cartella lib)
     //private static void createHandler() { handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2.exe"));}
 
-    // Creazione dell'handler per Mac
+    // Creazione dell'handler per MacOS
     private static void createHandler() {
         handler = new DesktopHandler(new DLV2DesktopService("lib/dlv-2.1.1-macos"));
     }
