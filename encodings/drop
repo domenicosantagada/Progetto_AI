@@ -1,0 +1,5 @@
+newBlock(R,C,V) | noNewBlock(R,C,V) :- createBlock(R,C,V).
+
+:- #count{R,C : newBlock(R,C,_)} != 1.
+
+:~ newBlock(4,4,2). [1@1]
