@@ -3,9 +3,8 @@ package domenico.dropthenumber;
 import it.unical.mat.embasp.languages.Id;
 import it.unical.mat.embasp.languages.Param;
 
-@Id("block")
-public class Block {
-
+@Id("existingBlock")
+public class ExistingBlock {
 
     @Param(0)
     private int row;
@@ -13,20 +12,15 @@ public class Block {
     private int column;
     @Param(2)
     private int value;
-    @Param(3)
-    private int score;
-    @Param(4)
-    private String match;
 
-    public Block(int r, int c, int v, int s, String m) {
+    public ExistingBlock(int r, int c, int v) {
         this.row = r;
         this.column = c;
         this.value = v;
-        this.score = s;
-        this.match = m;
+
     }
 
-    public Block() {
+    public ExistingBlock() {
     }
 
     public int getRow() {
@@ -45,6 +39,7 @@ public class Block {
         this.column = column;
     }
 
+
     public int getValue() {
         return value;
     }
@@ -52,22 +47,7 @@ public class Block {
     public void setValue(int value) {
         this.value = value;
     }
-
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public String getMatch() {
-        return match;
-    }
-
-    public void setMatch(String match) {
-        this.match = match;
-    }
 }
+
+
 

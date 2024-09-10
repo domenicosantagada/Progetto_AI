@@ -16,12 +16,14 @@ public class ArrayPossibleBlock {
     }
 
     public ArrayList<int[]> findPossibleNewBlock(int[][] matrix) {
-        // module for random or the function itself to get the value of the newBlock
+
+        int rand = randBlockValue.getRandom();
+        System.out.println("Rand generato : " + rand);
 
         for (int j = 0; j < COL_SIZE; j++) {
-            for (int i = ROW_SIZE - 1; i > 0; i--) {
+            for (int i = ROW_SIZE - 1; i >= 0; i--) {
                 if (matrix[i][j] == 0) {
-                    int[] arr = {i, j, 2};
+                    int[] arr = {i, j, rand};
                     newBlocks.add(arr);
                     break;
                 }
@@ -39,6 +41,5 @@ public class ArrayPossibleBlock {
             System.out.println("key : " + nB[0] + "," + nB[1] + " , value : " + nB[2]);
         }
     }
-
 
 }

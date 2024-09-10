@@ -13,11 +13,13 @@ public class newBlock {
     private int column;
     @Param(2)
     private int value;
+    @Param(3)
+    private int score;
 
     public newBlock(int r, int c, int v) {
         this.row = r;
         this.column = c;
-        this.value = v;
+        this.score = v;
 
     }
 
@@ -38,6 +40,14 @@ public class newBlock {
 
     public void setColumn(int column) {
         this.column = column;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 
     public int getValue() {

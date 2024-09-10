@@ -15,22 +15,14 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-
-import static javafx.scene.paint.Color.RED;
+import java.util.Set;
 
 
 public class RandomMatrixApp extends Application implements EventHandler<ActionEvent> {
@@ -38,41 +30,40 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
     // Costanti per le dimensioni della matrice
     static final int ROW_SIZE = 6;
     static final int COL_SIZE = 5;
-    static final int CELL_SIZE = 70;
     //STOP
     private static boolean running = true;
     //HANDLE
     private static Handler handler;
-    // Matrice di Label per visualizzare i numeri
-    public final Label[][] cells = new Label[ROW_SIZE][COL_SIZE];
-    //List numeri
-    public final ArrayList<Integer> listRandValueBlock = new ArrayList<>() {{
-        add(2);
-    }};
-    // Matrice di booleani per tenere traccia delle celle riempite
-    private final boolean[][] filledCells = new boolean[ROW_SIZE][COL_SIZE];
-    // Oggetto Random per generare numeri casuali
-    private final Random random = new Random();
     // Mappa dei numeri multipli di 2 con i colori associati
     private final Map<Integer, Color> numberColorMap = new HashMap<>();
     //FACT AND RULE
-    InputProgram fixedProgram = new ASPInputProgram();
+    //InputProgram fixedProgram = new ASPInputProgram();
     InputProgram variableProgram = new ASPInputProgram();
 
-    //RandNumber
-    public static int getRandom(ArrayList<Integer> listRandValueBlock) {
-        int rnd = new Random().nextInt(listRandValueBlock.size());
-        return listRandValueBlock.get(rnd);
-    }
+    randBlockValue randValue = new randBlockValue();
+
+    Graphic matrixFx;
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    // Creazione dell'handler per Windows (manca DLV nella cartella lib)
-    //private static void createHandler() { handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2.exe"));}
 
-    // Creazione dell'handler per MacOS
+    /*public void showAllTheMove(ArrayList<int[][]> moves) {
+        for (int[][] move : moves) {
+            System.out.println("Array:");
+            for (int i = 0; i < move.length; i++) {
+                for (int j = 0; j < move[i].length; j++) {
+                    if(move[i][j] != 0){
+                        cells[i][j].setText(String.valueOf(move[i][j]));
+                    } else {
+                    cells[i][j].setText("");
+                    }
+                }
+            }
+        }
+    }*/
+
     private static void createHandler() {
         handler = new DesktopHandler(new DLV2DesktopService("lib/dlv-2.1.1-macos"));
     }
@@ -83,21 +74,16 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
             resetGame();
         } else {
 
-            MapPossibleBlockArrayMatrix map = new MapPossibleBlockArrayMatrix(getMatrix());
+            MapPossibleBlockArrayMatrix map = new MapPossibleBlockArrayMatrix(matrixFx.getMatrix());
             map.printMap();
 
-            map.searchForMatch();
+            randValue.print();
 
-            map.printMap();
-
-
-            printMatrix();
+            //printMatrix();
 
 
-            //new block ->
-
-            //System.out.println("Dentro else");
-            //findAndAddAvailablePositionsAndBlock();
+            addPossibleBlockToProgram(variableProgram, map);
+            addExistingBlock(variableProgram);
             handler.addProgram(variableProgram);
 
 
@@ -111,11 +97,24 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
                 System.out.println("Found Optimal : " + optimal.toString());
 
                 try {
+                    // Hai scelto il blocco ora stampa tutto l'array della nuova mossa
+
+                    //for(scorre l'array di matrix )
+                    //for(scorre la matrix
+                    //setta la scene con i numeri
+
                     for (Object obj : optimal.getAtoms()) {
 
                         if (obj instanceof newBlock) {
                             newBlock b = (newBlock) obj;
-                            cells[b.getRow()][b.getColumn()].setText(String.valueOf(b.getValue()));
+                            //System.out.println("newBlock" + "[" + b.getRow() + "]"+ "[" + b.getColumn() + "]" + "[" + b.getValue() + "]" );
+
+                            int[] chosenBlock = new int[]{b.getRow(), b.getColumn(), b.getValue()};
+                            //map.printMapBlock(chosenBlock);
+
+                            randValue.addValueToArray(map.returnFinalMatrix(chosenBlock));
+
+                            showAllTheMove(map.getArrayOfMatrixForABlock(chosenBlock));
 
                         }
 
@@ -127,58 +126,49 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
 
             } catch (Exception e) {
                 System.out.println("No moves left. AI loose!");
-                System.exit(0);
+                //System.exit(0);
             }
 
             variableProgram.clearAll();
-
-            //Calcolo delle mosse disponibili
-            //Scelta mossa in base al punteggio con funzione che conserva le istanze della matrice ad ogni accopp.
         }
     }
 
-    private void initScene(Stage primaryStage) {
-        GridPane gridPane = new GridPane();
-        for (int row = 0; row < ROW_SIZE; row++) {
-            for (int col = 0; col < COL_SIZE; col++) {
-                // Crea un rettangolo con bordo
-                Rectangle border = new Rectangle(CELL_SIZE, CELL_SIZE);
-                border.setFill(Color.WHITE);
-                border.setStroke(Color.BLACK);
+    public void showAllTheMove(ArrayList<int[][]> moves) {
+        Timeline timeline = new Timeline();
+        int delay = 0;
 
-                // Crea una Label
-                Label label = new Label("");
-                // settiamo il font Arial con dimensione 20 in grassetto
-                label.setStyle("-fx-font: 20 arial; -fx-font-weight: bold;");
-                cells[row][col] = label;
+        for (int[][] move : moves) {
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(delay), e -> {
+                updateLabelsWithMove(move);
+            });
+            timeline.getKeyFrames().add(keyFrame);
+            delay += 300; // Set delay to 500 milliseconds between each matrix
+        }
+        timeline.play();
+    }
 
-                // Usa uno StackPane per combinare la Label e il Rettangolo
-                StackPane stackPane = new StackPane();
-                stackPane.getChildren().addAll(border, label);
-
-                // Aggiungi lo StackPane alla griglia
-                gridPane.add(stackPane, col, row);
+    private void updateLabelsWithMove(int[][] move) {
+        for (int i = 0; i < move.length; i++) {
+            for (int j = 0; j < move[i].length; j++) {
+                if (move[i][j] != 0) {
+                    matrixFx.setCell(i, j, move[i][j]);
+                } else {
+                    matrixFx.setCell(i, j, 0); // Clear the cell if the value is 0
+                }
             }
         }
-        Scene scene = new Scene(gridPane, COL_SIZE * CELL_SIZE, ROW_SIZE * CELL_SIZE);
-        primaryStage.setTitle("DROP THE NUMBERS");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-
     }
 
+    //Passare uno stage anche chiamando la classe
     @Override
     public void start(Stage primaryStage) {
-
-        // Inizializza la mappa dei colori
-        initializeColorMap();
 
         //Crea handler
         createHandler();
 
         //inizializza la scena
-        initScene(primaryStage);
+        //Sostituire con chiamata al costruttore
+        matrixFx = new Graphic(primaryStage);
 
         //Registra classi
         registerClass();
@@ -188,22 +178,11 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
         handler.addProgram(encoding);
 
 
-        //ESEMPIO
-        String s = "1";
-        cells[ROW_SIZE - 1][0].setText("2");
-        cells[ROW_SIZE - 1][1].setText("4");
-        cells[ROW_SIZE - 1][2].setText("4");
-        cells[ROW_SIZE - 2][2].setText("2");
-        cells[ROW_SIZE - 1][3].setText("4");
-        cells[ROW_SIZE - 1][4].setText("4");
-        cells[ROW_SIZE - 2][4].setText("2");
-        //System.out.println(Integer.parseInt(cells[ROW_SIZE - 1][0].getText()));
-
-
-        // Crea una Timeline per aggiornare le celle con numeri casuali
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), this));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), this));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+
+        System.out.println("timeLine end, allMoves.size() : ");
 
     }
 
@@ -216,139 +195,53 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
         }
     }
 
-    //i have to pass an identical matrix and change the if condition
-
-    private void searchForMatch(Pair<Pair<Integer, Integer>, Integer> p) {
-        boolean match_found = true;
-        while (match_found) {
-            int x, y = 0;
-            if ((x = p.getKey().getKey() + 1) < ROW_SIZE &&
-                    !(cellIsNull(x, p.getKey().getValue())) &&
-                    p.getValue() == Integer.parseInt(cells[x][p.getKey().getValue()].getText())) {
-
-                y = p.getKey().getValue();
-                System.out.println("Posso accoppiare giù con valore : " + p.getValue());
-                updateMatrix("lower", x, y, p.getValue() * 2);
-                continue;
-            }
-
-            if ((y = p.getKey().getValue() - 1) >= 0 &&
-                    !(cellIsNull(p.getKey().getKey(), y)) &&
-                    p.getValue() == Integer.parseInt(cells[p.getKey().getKey()][y].getText())) {
-                x = p.getKey().getKey();
-                System.out.println("Posso accoppiare sx");
-                continue;
-            }
-            if ((y = p.getKey().getValue() + 1) < COL_SIZE &&
-                    !(cellIsNull(p.getKey().getKey(), y)) &&
-                    p.getValue() == Integer.parseInt(cells[p.getKey().getKey()][y].getText())) {
-                x = p.getKey().getKey();
-                System.out.println("Posso accoppiare dx");
-                continue;
-            }
-            match_found = false;
-
-        }
-    }
-
-    private void updateMatrix(String typeOfMatch, Integer x, Integer y, Integer newValueBlock) {
-        switch (typeOfMatch) {
-            case "lower":
-                System.out.println("Inserisco in posizione x : " + x + " y : " + y);
-                //cells[x][y].setText(String.valueOf(newValueBlock));
-                break;
-            case "sx":
-                break;
-            case "dx":
-                break;
-        }
-    }
-
-
-    private boolean cellIsNull(Integer i, Integer j) {
-        return cells[i][j].getText().isEmpty();
-    }
-
-
-    int[][] getMatrix() {
-
-        int[][] copiedMatrix = new int[ROW_SIZE][COL_SIZE];
-
-        for (int i = 0; i < ROW_SIZE; i++) {
-            for (int j = 0; j < COL_SIZE; j++) {
-                if (cells[i][j].getText().isEmpty()) {
-                    copiedMatrix[i][j] = 0;
-                } else {
-                    copiedMatrix[i][j] = Integer.parseInt(cells[i][j].getText());
-                }
-
-            }
-        }
-
-        return copiedMatrix;
-    }
-
-
-    void printMatrix() {
-        for (int i = 0; i < ROW_SIZE; i++) {
-            for (int j = 0; j < COL_SIZE; j++) {
-                if (cells[i][j].getText().isEmpty()) {
-                    System.out.print(" ");
-                } else {
-                    System.out.print(cells[i][j].getText());
-                }
-
-            }
-            System.out.println();
-        }
-    }
-
-
-    /*private void findAndAddAvailablePositionsAndBlock() {
-        int valueBlock = getRandom(listRandValueBlock);
-        System.out.println("valueBlock : " + valueBlock);
-        for(int j = 0; j < COL_SIZE; j++){
-            for(int i = ROW_SIZE - 1; i > 0; i--)
-            {
-                if(cells[i][j].getText().isEmpty())
-                {
-                    try{
-                        variableProgram.addObjectInput(new createBlock(i,j,valueBlock));
-                    } catch (Exception e){
-                        System.err.println("ADD_CREATEBLOCK_TO_PROGRAM_ERROR");
-                        e.printStackTrace();
-                    }
-                    break;
-                }else{
-                    try{
-                        variableProgram.addObjectInput(new Block(i,j,Integer.parseInt(cells[ROW_SIZE - 1][0].getText())));
-                    } catch (Exception e){
-                        System.err.println("ADD_EXISTING_BLOCK_TO_PROGRAM_ERROR");
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-        }
-
-    }*/
-
 
     private void resetGame() {
+        //POP UP GAME OVER E stoppare la schermata sull'ultima mossa
         System.out.println("Game stop");
     }
 
 
-    // Metodo per inizializzare la mappa di numeri e colori
-    private void initializeColorMap() {
-        numberColorMap.put(2, RED);
-        numberColorMap.put(4, Color.VIOLET);
-        numberColorMap.put(8, Color.BLUE);
-        numberColorMap.put(16, Color.GREEN);
-        numberColorMap.put(32, Color.ORANGE);
-        numberColorMap.put(64, Color.YELLOW);
-        numberColorMap.put(128, Color.PINK);
-        numberColorMap.put(256, Color.CYAN);
-        numberColorMap.put(512, Color.LIGHTGRAY);
+    private String getColor(int key) {
+        for (int k : numberColorMap.keySet()) {
+            if (k == key) {
+                System.out.println("Color block : " + numberColorMap.get(k).toString());
+                return numberColorMap.get(k).toString();
+            }
+        }
+        return null;
     }
+
+
+    public void addPossibleBlockToProgram(InputProgram facts, MapPossibleBlockArrayMatrix map) {
+        Set<int[]> possBlocks = map.getPossibleBlock();
+        for (var pB : possBlocks) {
+            try {
+                facts.addObjectInput(new Block(pB[0], pB[1], pB[2], map.getPossibleBlockAndScore(pB), map.findIfMatch(pB)));
+                System.out.println("newBlock" + "[" + pB[0] + "]" + "[" + pB[1] + "]" + "[" + map.getPossibleBlockAndScore(pB) + "]");
+
+            } catch (Exception e) {
+                System.err.println("ERROR ADDING FACTS TO PROGRAM");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void addExistingBlock(InputProgram facts) {
+        int[][] currentMatrix = matrixFx.getMatrix();
+        for (int i = 0; i < ROW_SIZE; i++) {
+            for (int j = 0; j < COL_SIZE; j++) {
+                if (currentMatrix[i][j] != 0) {
+                    try {
+                        facts.addObjectInput(new ExistingBlock(i, j, currentMatrix[i][j]));
+                    } catch (Exception e) {
+                        System.err.println("ERROR ADDING EXISTING BLOCK TO PROGRAM");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+
 }

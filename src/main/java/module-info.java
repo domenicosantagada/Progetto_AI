@@ -1,4 +1,4 @@
-module domenico.dropthenumber {
+module DropTheNumber {
     requires javafx.controls;
     requires javafx.fxml;
     requires org.antlr.antlr4.runtime;
