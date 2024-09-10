@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-
 public class RandomMatrixApp extends Application implements EventHandler<ActionEvent> {
 
     // Costanti per le dimensioni della matrice
@@ -126,6 +125,8 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
 
             } catch (Exception e) {
                 System.out.println("No moves left. AI loose!");
+                running = false;
+                matrixFx.gameOver();
                 //System.exit(0);
             }
 
@@ -199,6 +200,9 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
     private void resetGame() {
         //POP UP GAME OVER E stoppare la schermata sull'ultima mossa
         System.out.println("Game stop");
+        //System.exit(0);
+
+
     }
 
 
