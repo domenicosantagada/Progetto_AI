@@ -179,7 +179,7 @@ public class RandomMatrixApp extends Application implements EventHandler<ActionE
         handler.addProgram(encoding);
 
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3), this));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(3.4), this));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 

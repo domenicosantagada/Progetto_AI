@@ -1,5 +1,3 @@
-%-------GUESS & CHECK--------------
-
 newBlock(R,C,V,S) | noNewBlock(R,C,V,S) :- block(R,C,V,S,_).
 
 %-----CONSTRAINT---------
@@ -7,19 +5,22 @@ newBlock(R,C,V,S) | noNewBlock(R,C,V,S) :- block(R,C,V,S,_).
 :- #count{R,C : newBlock(R,C,_,_)} != 1.
 :- newBlock(_,_,_,S), noNewBlock(_,_,_,S1), S > S1.
 
-%Può scegliere la riga con valore 0 solo se sta per fare un match
+%Puo' scegliere la riga con valore 0 solo se sta per fare un match
 :- newBlock(0,C,V,_), block(0,C,V,_,"false").
 
 %------WEAK------------
 
-%Se il tipo di match di tutti i blocchi è false quindi non ci sono accoppiate preferisci posizioni più alla base
-%noMatch(1) :- block(_,_,_,_,false) , not block(_,_,_,_,true).
-%:~ noMatch(1) , newBlock(R,_,_,_,_). [R@1]
+%Se il tipo di match di tutti i blocchi e' false quindi non ci sono accoppiate preferisci posizioni piu' alla base
+match(1) :- block(R,C,_,_,"true").
+:~ not match(1) , newBlock(R,_,_,_) , P = 5 - R. [P@1]
 
-%Preferibile non posizionare un blocco nuovo sopra un altro di valore inferiore e scegliere
-:~ newBlock(R,C,V,_) , block(R,C,_,_,"false"), existingBlock(R1,C,V1) , R1 = R + 1 , V > V1. [V@1,R,C]
+%Se c'e' un match preferisci quello alla base
+:~ match(1) , newBlock(R,_,_,_) , P = 5 - R. [P@1]
+
+%Preferibile non posizionare un blocco nuovo sopra un altro di valore inferiore
+:~ newBlock(R,C,V,_) , not match(1), existingBlock(R1,C,V1) , R1 = R + 1 , V > V1 , V2 = V + V1. [V@2]
+
+:~ newBlock(R,C,V,_) , not match(1), existingBlock(R1,C,V1) , R1 = R + 1 , V1 > V , V2 = V1 - V. [V2@1]
 
 %Preferibile posizionare un nuovo blocco sopra un altro ma tra tutti preferire quello con la differenza di valore minore
-:~ newBlock(R,C,V,_) , block(R,C,_,_,"false"), existingBlock(R1,C,V1) , R1 = R + 1 , V2 = V1 - V. [V2@2,R,C]
-
-:~ newBlock(6,6,6,6). [1]
+%:~ newBlock(R,C,V,_) , not match(1), existingBlock(R1,C,V1) , R1 = R + 1 , V2 = V1 - V. [V2@2]

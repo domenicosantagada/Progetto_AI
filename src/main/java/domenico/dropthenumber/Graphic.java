@@ -101,7 +101,7 @@ public class Graphic {
             }
         }
 
-
+/*
         cells[ROW_SIZE - 1][0].setText("8");
         cells[ROW_SIZE - 1][1].setText("2");
         cells[ROW_SIZE - 1][2].setText("332");
@@ -131,6 +131,8 @@ public class Graphic {
         
         cells[ROW_SIZE - 5][3].setText("156");
         cells[ROW_SIZE - 5][4].setText("3273");
+
+ */
 
 
         Scene scene = new Scene(root, 600, 800);
